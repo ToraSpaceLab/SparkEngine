@@ -1,49 +1,55 @@
-cmake_minimum_required(VERSION 3.1...4.0)
+cmake_minimum_required(VERSION 3.12...3.25) # Modern ranges are safer
 project(SparkEngine CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 1. 先配置并加载依赖
+# 1. GLFW via FetchContent
 include(FetchContent)
 FetchContent_Declare(
   glfw
   GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG master # 建议改为具体的版本号如 3.3.8，master 可能不稳定
-  SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLFW"
+  GIT_TAG 3.3.8  # Use a stable version
 )
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "")
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "")
-set(GLFW_INSTALL OFF CACHE INTERNAL "") # 改为 INTERNAL 确保覆盖
+set(GLFW_INSTALL OFF CACHE INTERNAL "")
 
 FetchContent_MakeAvailable(glfw)
 
-# 1. 设置 GLEW 路径
+# 2. GLEW Configuration
 set(GLEW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLEW")
+set(GLEW_HEADER_DIR "${GLEW_DIR}/include")
 
-# 2. 查找库文件 (增加更多可能的后缀和名称)
-find_library(GLEW_LIBRARY
-    NAMES glew32s glew32s.lib glew32 glew32.lib
-    PATHS "${GLEW_DIR}/lib"
-    PATH_SUFFIXES "Release/x64" "x64" "Release/Win32" "Win32"
-    NO_DEFAULT_PATH
-)
+if (APPLE)
+    # 1. Manually specify the absolute path to the static library file
+    # This prevents the linker from accidentally picking up a .dylib
+    set(GLEW_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLEW/lib/libGLEW.a")
 
-# 2. 手动指定 GLEW 路径
-set(GLEW_HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLEW/include")
-set(GLEW_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLEW/lib/Release/x64/glew32s.lib")
+    # 2. Check if the file actually exists to avoid cryptic linker errors
+    if (NOT EXISTS "${GLEW_LIBRARY}")
+        message(FATAL_ERROR "[MAC] Static GLEW library not found at: ${GLEW_LIBRARY}")
+    endif()
 
-# 3. 定义可执行文件
+    set(GLEW_HEADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLEW/include")
+elseif (WIN32)
+    # Search for static lib specifically if using GLEW_STATIC
+    find_library(GLEW_LIBRARY NAMES glew32s glew32 PATHS "${GLEW_DIR}/lib" PATH_SUFFIXES "Release/x64" "x64" NO_DEFAULT_PATH)
+endif()
+
+if (NOT GLEW_LIBRARY)
+    message(FATAL_ERROR "GLEW library not found at ${GLEW_DIR}")
+endif()
+
+# 3. Executable & Requirements
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-# 4. 配置包含目录和预处理器宏（必须定义 GLEW_STATIC）
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLEW_HEADER_DIR})
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLEW_STATIC)
 
-# 5. 链接 (确保 OpenGL 在最后)
+# 4. Linking
 find_package(OpenGL REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
@@ -52,5 +58,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
 )
 
-# 验证输出（在 Output 窗口的 CMake/Configure 频道查看）
-message(STATUS "Using GLEW Lib: ${GLEW_LIB_PATH}")
+# 5. MacOS Specific Frameworks
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+endif()
