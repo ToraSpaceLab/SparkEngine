@@ -45,11 +45,15 @@ if (NOT GLEW_LIBRARY)
     message(FATAL_ERROR "GLEW library not found at ${GLEW_DIR}")
 endif()
 
+# GLM Configuration
+add_subdirectory(vendor/GLM)
+
 # 3. Executable & Requirements
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLEW_HEADER_DIR})
 target_compile_definitions(${PROJECT_NAME} PRIVATE GLEW_STATIC)
+
 
 # 4. Linking
 find_package(OpenGL REQUIRED)
@@ -57,6 +61,7 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     glfw
     ${GLEW_LIBRARY}
+    glm::glm
     OpenGL::GL
 )
 
