@@ -34,19 +34,27 @@ float minSize = 0.1f;
 static const char *vShader = R"(
 	#version 330
 	layout (location = 0) in vec3 pos;
+
+	out vec4 vCol;
+
 	uniform mat4 model;
 	
 	void main(){
 		gl_Position = model * vec4(pos, 1.0);
+		vCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 	}
 )";
 
 // Fragment Shader
 static const char *fShader = R"(
 	#version 330
+
+	in vec4 vCol;
+
 	out vec4 colour;
+	
 	void main(){
-		colour = vec4(1.0, 0.0, 0.0, 1.0);
+		colour = vCol;
 	}
 )";
 
@@ -223,9 +231,9 @@ int main()
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+		// model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
 		// model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(curSize, curSize, 1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 
 		glUniform1f(uniformModel, triOffset);
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
