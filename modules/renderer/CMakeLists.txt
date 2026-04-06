@@ -4,6 +4,7 @@ add_library(Renderer STATIC)
 # 显式添加源文件
 target_sources(Renderer PRIVATE
     src/mesh.cpp
+    src/shader.cpp
     # src/camera.cpp  <-- 未来加在这里
 )
 

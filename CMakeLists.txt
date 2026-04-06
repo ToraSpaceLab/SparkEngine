@@ -24,7 +24,7 @@ elseif (WIN32)
 endif()
 
 # --- 2. 添加引擎各个模块 ---
-# 以后你会有 add_subdirectory(core) 等
+add_subdirectory(modules/core)
 add_subdirectory(modules/renderer)
 
 # --- 3. 添加沙盒测试程序 ---
