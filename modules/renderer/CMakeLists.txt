@@ -5,7 +5,7 @@ add_library(Renderer STATIC)
 target_sources(Renderer PRIVATE
     src/mesh.cpp
     src/shader.cpp
-    # src/camera.cpp  <-- 未来加在这里
+    src/camera.cpp
 )
 
 # 导出头文件路径给其他模块（如 Sandbox）
