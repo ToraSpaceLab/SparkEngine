@@ -6,6 +6,7 @@ target_sources(Renderer PRIVATE
     src/mesh.cpp
     src/shader.cpp
     src/camera.cpp
+    src/texture.cpp
 )
 
 # 导出头文件路径给其他模块（如 Sandbox）

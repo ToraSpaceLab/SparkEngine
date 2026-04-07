@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15) # 建议最低 3.15 以支持更好的 target_sources
+cmake_minimum_required(VERSION 3.26) # 建议最低 3.15 以支持更好的 target_sources
 project(SparkEngine LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
